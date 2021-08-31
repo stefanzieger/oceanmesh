@@ -317,9 +317,7 @@ def _clip_polys(polys, bbox, verbose, delta=0.10):
 
     for poly in polyL:
         mp = shapely.geometry.Polygon(poly[:-2, :])
-        if mp.is_valid:
-            mp = [mp]
-        else:
+        if not mp.is_valid:
             if verbose > 0:
                 print(
                     "Warning, polygon",
@@ -327,6 +325,10 @@ def _clip_polys(polys, bbox, verbose, delta=0.10):
                     "Try to make valid.",
                 )
             mp = mp.buffer(1.0e-5)  # Apply 1 metre buffer
+
+        if mp.geom_type == "Polygon":
+            mp = [mp]  # `Polygon` -> `MultiPolygon` with 1 member
+
         for p in mp:
             pi = p.intersection(b)
             if b.contains(p):
